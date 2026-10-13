@@ -1,3 +1,5 @@
+import Std
+
 /-
   ExecutionTrace.lean — Formal verified execution mechanism.
 

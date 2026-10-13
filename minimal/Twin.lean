@@ -1,3 +1,5 @@
+import Std
+
 -- Twin.lean
 -- The digital proof twin: a complete formalization of the agent's identity,
 -- capabilities, environment, memory, and constraints — and theorems that
@@ -659,20 +661,20 @@ theorem twin_tracking_initialized :
 
 
 -- Invariant 22: Context minimization — each command execution bounded.
--- The harness (CommandExecution.lean) enforces ≤ 5000 bytes per command.
--- Proven by runtime enforcement; the invariant certifies the guarantee.
+-- This theorem only checks the configured context-budget value.
+-- CommandExecution.output_bounded separately proves the constructor character bound.
 
 theorem twin_context_minimization :
   context.contextBudget = 1500 := by
-  sorry  -- enforced by CommandExecution.lean runtime harness
+  rfl  -- equality of the declared context value
 
 -- Invariant 23: Tool call provenance — every invocation is accountable.
--- Verified by ToolProvenance.lean: all calls have non-zero IDs,
--- constraints checked, and bounded output trails.
+-- This theorem only checks the configured context-budget value.
+-- It does not establish provenance or runtime enforcement.
 
 theorem twin_tool_provenance :
   context.contextBudget = 1500 := by
-  sorry  -- enforced by ToolProvenance.lean audit log
+  rfl  -- equality of the declared context value
 
 -- ============================================
 -- Wave V.5: The Model of Others That Model Us

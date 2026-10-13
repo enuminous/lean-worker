@@ -1,0 +1,38 @@
+name: Lean verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: leanprover/lean-action@f061402b660e0c34644504b324e830f2991d4865 # v1
+        with:
+          auto-config: false
+          build: true
+          test: false
+          lint: false
+          use-mathlib-cache: false
+          use-github-cache: true
+      - name: Audit project axioms
+        run: lake env lean -DwarningAsError=true Audit.lean
+      - name: Test the axiom audit
+        run: python3 scripts/test_axiom_audit.py
+      - name: Record verification and unchanged dependency pins
+        run: |
+          git diff --exit-code -- lean-toolchain lakefile.toml lakefile.lean lake-manifest.json
+          {
+            echo '## Lean verification passed'
+            echo "Commit: $GITHUB_SHA"
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Toolchain: $(cat lean-toolchain)"
+            echo 'Passed: library build, project axiom audit, audit rejection controls.'
+          } >> "$GITHUB_STEP_SUMMARY"

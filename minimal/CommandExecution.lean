@@ -22,15 +22,14 @@ structure ExecResult where
 abbrev ExecResultBounded : Nat := 5000
 
 -- Helper: take first N chars of a String, return as String.
--- String operations in Lean 4 Stdlib: s.take n returns String.Slice
--- Convert via toString to get String.
+-- Work with Unicode characters; this is not a UTF-8 byte-count bound.
 def stringTake (s : String) (n : Nat) : String :=
-  if n ≥ s.length then s else (s.take n).toString
+  String.ofList (s.toList.take n)
 
--- Truncate a string to max bytes, return (result, wasTruncated).
-def truncateString (maxBytes : Nat) (s : String) : String × Bool :=
-  if s.length > maxBytes then
-    (stringTake s maxBytes ++ "...", true)
+-- Truncate to maxChars; the separate flag carries the truncation marker.
+def truncateString (maxChars : Nat) (s : String) : String × Bool :=
+  if s.length > maxChars then
+    (stringTake s maxChars, true)
   else
     (s, false)
 
@@ -90,11 +89,33 @@ theorem command_length_pos : ∀ (r : ExecResult), r.command.length > 0 → True
   intro r _
   trivial
 
--- Invariant 3: Output is bounded by construction.
-theorem output_bounded : ∀ (r : ExecResult),
-  r.stdout.length ≤ ExecResultBounded ∧ r.stderr.length ≤ ExecResultBounded := by
-  intro r
-  sorry
+-- The old claim quantified arbitrary records and was false. Only the constructor
+-- enforces the bound; no proof obligation is hidden in ExecResult.
+theorem stringTake_length_le (s : String) (n : Nat) :
+    (stringTake s n).length ≤ n := by
+  simpa only [stringTake, String.length_ofList] using List.length_take_le n s.toList
+
+theorem truncateString_length_le (n : Nat) (s : String) :
+    (truncateString n s).1.length ≤ n := by
+  unfold truncateString
+  split
+  · exact stringTake_length_le s n
+  · omega
+
+theorem output_bounded (cmd : String) (code : Nat) (out err : String) (dur : Nat) :
+    (makeResult cmd code out err dur).stdout.length ≤ ExecResultBounded ∧
+    (makeResult cmd code out err dur).stderr.length ≤ ExecResultBounded := by
+  exact ⟨truncateString_length_le _ out, truncateString_length_le _ err⟩
+
+/-- A machine-checked counterexample to the former unrestricted statement. -/
+theorem arbitrary_result_not_bounded :
+    ¬ (∀ r : ExecResult, r.stdout.length ≤ ExecResultBounded ∧
+        r.stderr.length ≤ ExecResultBounded) := by
+  intro h
+  let r : ExecResult := ⟨"", 0, String.ofList (List.replicate 5001 'x'), "", 0, false⟩
+  have bad : 5001 ≤ 5000 := by
+    simpa [r, ExecResultBounded, String.length_ofList] using (h r).1
+  omega
 
 -- ============================================
 -- Example: Command Log

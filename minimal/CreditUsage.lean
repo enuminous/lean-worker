@@ -1,3 +1,5 @@
+import Std
+
 -- CreditUsage.lean
 -- Formalizes the agent's credit/token tracking as a constraint
 -- on its own operational behavior.

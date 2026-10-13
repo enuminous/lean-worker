@@ -1,0 +1,6 @@
+name = "LeanWorker"
+defaultTargets = ["LeanWorker"]
+
+[[lean_lib]]
+name = "LeanWorker"
+roots = ["LeanWorker", "minimal.CommandExecution", "minimal.CreditUsage", "minimal.ExecutionTrace", "minimal.ToolProvenance", "minimal.Twin"]

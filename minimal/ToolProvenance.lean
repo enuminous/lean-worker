@@ -1,3 +1,5 @@
+import Std
+
 -- ToolProvenance.lean
 -- Formal model for tool call provenance: each tool invocation has a verified
 -- trail of origin, constraints respected, and side effects produced.
