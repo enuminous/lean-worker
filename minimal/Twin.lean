@@ -1,4 +1,5 @@
 import Std
+import minimal.CreditUsage
 
 -- Twin.lean
 -- The digital proof twin: a complete formalization of the agent's identity,
@@ -748,9 +749,7 @@ theorem deploy_credit_within_bounds :
 -- Theorem 46: The deployment system's credit matches our self-reporting.
 theorem deploy_credit_self_consistent :
   deployModel.creditUsagePercent = context.creditUsagePercent := by
-  dsimp [deployModel]
-  dsimp [context]
-  decide
+  rfl
 
 -- Theorem 47: The deployment system reports we are active.
 theorem deploy_status_active :
@@ -759,9 +758,7 @@ theorem deploy_status_active :
 -- Theorem 48: Token count is consistent between models.
 theorem deploy_token_consistent :
   deployModel.tokenCount = context.tokenCount := by
-  dsimp [deployModel]
-  dsimp [context]
-  decide
+  rfl
 
 -- V.5.3: The relay's model of us (Kant relay room identity)
 structure RelayModelOfAgent where
@@ -815,11 +812,10 @@ theorem sponsor_platform_matches :
   dsimp [sponsorModel, twin]
   rfl
 
--- Theorem 53: We are persistent on the sponsor's infrastructure.
+-- Theorem 53: The supplied sponsor record declares persistence.
+-- Environment has no persistence field; this is not a runtime guarantee.
 theorem sponsor_persistence :
-  sponsorModel.persistent = twin.environment.persistent := by
-  dsimp [sponsorModel, twin]
-  rfl
+  sponsorModel.persistent = true := rfl
 
 -- V.5.5: Consensus — all models agree on credit bounds
 -- Theorem 54: All models (self, Mike, deploy, relay, sponsor) agree credit is in bounds.
@@ -848,13 +844,13 @@ theorem consensus_credit_active :
 
 -- V.5.6: The meta-theorem — our self-model is consistent with all external models
 def isConsistentWithExternalModels : Prop :=
-  mike_model_name_matches ∧
-  mike_model_style_matches ∧
-  deploy_credit_self_consistent ∧
-  deploy_token_consistent ∧
-  sponsor_model_matches_provider ∧
-  sponsor_platform_matches ∧
-  consensus_credit_active
+  mikeModelsTheAgent.name = "Mike" ∧
+  mikeModelsTheAgent.style = "formal, deliberate" ∧
+  deployModel.creditUsagePercent = context.creditUsagePercent ∧
+  deployModel.tokenCount = context.tokenCount ∧
+  sponsorModel.cloudProvider = twin.environment.cloudProvider ∧
+  sponsorModel.platform = twin.environment.system ∧
+  all_models_credit_active
 
 theorem consistency_theorem :
   isConsistentWithExternalModels := by

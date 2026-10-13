@@ -58,7 +58,7 @@ def resultSummary (r : ExecResult) : String :=
   if r.exitCode ≠ 0 then
     "ERR " ++ r.command ++ " code=" ++ toString r.exitCode ++ ": " ++ stringTake r.stdout 80
   else
-    "OK " ++ r.command ++ " lines=" ++ toString r.stdout.lines.length ++ " duration=" ++ toString r.duration ++ "ms"
+    "OK " ++ r.command ++ " lines=" ++ toString r.stdout.lines.toList.length ++ " duration=" ++ toString r.duration ++ "ms"
 
 -- Maximum budget for command output in context per turn.
 abbrev contextBudget : Nat := 1500
@@ -100,7 +100,9 @@ theorem truncateString_length_le (n : Nat) (s : String) :
   unfold truncateString
   split
   · exact stringTake_length_le s n
-  · omega
+  · rename_i h
+    change s.length ≤ n
+    omega
 
 theorem output_bounded (cmd : String) (code : Nat) (out err : String) (dur : Nat) :
     (makeResult cmd code out err dur).stdout.length ≤ ExecResultBounded ∧
@@ -113,8 +115,9 @@ theorem arbitrary_result_not_bounded :
         r.stderr.length ≤ ExecResultBounded) := by
   intro h
   let r : ExecResult := ⟨"", 0, String.ofList (List.replicate 5001 'x'), "", 0, false⟩
-  have bad : 5001 ≤ 5000 := by
-    simpa [r, ExecResultBounded, String.length_ofList] using (h r).1
+  have bad := (h r).1
+  change (String.ofList (List.replicate 5001 'x')).length ≤ 5000 at bad
+  rw [String.length_ofList, List.length_replicate] at bad
   omega
 
 -- ============================================

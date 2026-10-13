@@ -36,3 +36,10 @@ not presented as a proof of the old statement.
 The two Twin placeholders were constant-record equalities and are now proved by
 reflexivity. These equalities do not certify live telemetry, provenance, or
 runtime enforcement; the model remains conditional on the supplied records.
+
+The former sponsor-persistence equation referred to a nonexistent field of
+`Environment`. Its replacement checks only the supplied sponsor record's Boolean
+flag; persistence of the running infrastructure is not established. The model
+consistency proposition now states the equalities themselves, instead of using
+proof terms where propositions were required. These typing and scope corrections
+are explicit, and the external-world claims remain outside the formal model.
